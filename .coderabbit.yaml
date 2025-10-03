@@ -2,13 +2,18 @@ language: "en-US"
 
 reviews:
   profile: "assertive"
+  high_level_summary: false
   changed_files_summary: false
   sequence_diagrams: false
   estimate_code_review_effort: false
   path_filters: [
     "src/**",
-    "server/**"
+    "!src/drizzle/*"
   ]
+  auto_review:
+    enabled: false
+    labels:
+      - ai-review
   finishing_touches:
     docstrings:
       enabled: false
