@@ -10,80 +10,178 @@ This document outlines the coding standards and best practices for TypeScript/No
 - Use modern ES6+ features and async/await patterns
 - Maintain consistent code style across the project
 
-## 1. Naming Conventions
+---
 
-### 1.1 Variable Naming
+## Naming Conventions
+
+### [TS-NAMING-001] Variable and Function Naming
+
+**Rule**: Use camelCase for variables and functions.
+
+**Severity**: Error
+
+**Good Examples**:
 ```typescript
-// Use camelCase for variables and functions
 const firstName = 'John';
 const calculateTotalPrice = (items: Item[]) => { ... };
+```
 
-// Use PascalCase for classes, interfaces, types, and enums
+**Bad Examples**:
+```typescript
+const FirstName = 'John';
+const calculate_total_price = (items: Item[]) => { ... };
+```
+
+---
+
+### [TS-NAMING-002] Class, Interface, and Type Naming
+
+**Rule**: Use PascalCase for classes, interfaces, types, and enums.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
 class UserService { ... }
 interface ApiResponse { ... }
 type DatabaseConfig = { ... };
 enum UserRole { Admin, User, Guest }
+```
 
-// Use UPPER_SNAKE_CASE for constants
+**Bad Examples**:
+```typescript
+class userService { ... }
+interface apiResponse { ... }
+type database_config = { ... };
+```
+
+---
+
+### [TS-NAMING-003] Constant Naming
+
+**Rule**: Use UPPER_SNAKE_CASE for constants.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const MAX_RETRY_ATTEMPTS = 3;
 const API_BASE_URL = 'https://api.example.com';
 ```
 
-### 1.2 Boolean Variables
+**Bad Examples**:
 ```typescript
-// Prefix with question words
+const maxRetryAttempts = 3;
+const apiBaseUrl = 'https://api.example.com';
+```
+
+---
+
+### [TS-NAMING-004] Boolean Variable Naming
+
+**Rule**: Boolean variables must be prefixed with question words (is, has, can, should).
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const isAuthenticated = true;
 const hasPermission = false;
 const canEdit = user.role === 'admin';
 const shouldShowModal = !isCompleted;
 ```
 
-### 1.3 File and Folder Naming
+**Bad Examples**:
 ```typescript
-// Use kebab-case for files
+const authenticated = true;
+const permission = false;
+const edit = user.role === 'admin';
+```
+
+---
+
+### [TS-NAMING-005] File and Folder Naming
+
+**Rule**: Use kebab-case for files and folders.
+
+**Severity**: Warning
+
+**Good Examples**:
+```
 user-service.ts
 api-client.ts
 database-config.ts
-
-// Use PascalCase for component files (if using React/Vue)
-UserProfile.tsx
-PaymentForm.vue
 ```
 
-## 2. Type Safety and TypeScript Best Practices
+**Bad Examples**:
+```
+UserService.ts
+api_client.ts
+databaseConfig.ts
+```
 
-### 2.1 Strict Type Annotations
+---
+
+## Type System
+
+### [TS-TYPE-001] Explicit Function Type Annotations
+
+**Rule**: Always provide explicit types for function parameters and return values.
+
+**Severity**: Error
+
+**Good Examples**:
 ```typescript
-// Always provide explicit types for function parameters and return values
 function processUser(id: string, options: UserOptions): Promise<User | null> {
   // Implementation
 }
-
-// Use type assertions sparingly and safely
-const userElement = document.getElementById('user') as HTMLDivElement;
 ```
 
-### 2.2 Interface Design
+**Bad Examples**:
 ```typescript
-// Use interfaces for object shapes
+function processUser(id, options) {
+  // Implementation
+}
+```
+
+---
+
+### [TS-TYPE-002] Interface Design
+
+**Rule**: Use interfaces for object shapes. Use readonly for immutable properties.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 interface User {
   readonly id: string;
   name: string;
   email: string;
   createdAt: Date;
-  updatedAt?: Date; // Optional properties with ?
-}
-
-// Extend interfaces when needed
-interface AdminUser extends User {
-  permissions: Permission[];
-  lastLogin: Date;
+  updatedAt?: Date;
 }
 ```
 
-### 2.3 Generic Types
+**Bad Examples**:
 ```typescript
-// Use generics for reusable code
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+```
+
+---
+
+### [TS-TYPE-003] Generic Types Usage
+
+**Rule**: Use generics for reusable code with type safety.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 interface ApiResponse<T> {
   data: T;
   status: number;
@@ -95,29 +193,56 @@ function fetchData<T>(url: string): Promise<ApiResponse<T>> {
 }
 ```
 
-### 2.4 Union Types and Type Guards
+**Bad Examples**:
 ```typescript
-// Use union types for multiple possible types
-type Status = 'pending' | 'approved' | 'rejected';
+interface ApiResponse {
+  data: any;
+  status: number;
+  message: string;
+}
+```
 
-// Implement type guards
+---
+
+### [TS-TYPE-004] Type Guards Implementation
+
+**Rule**: Implement proper type guards for type narrowing.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
 function isUser(obj: unknown): obj is User {
-  return typeof obj === 'object' && 
-         obj !== null && 
-         'id' in obj && 
-         'name' in obj;
+  return typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'name' in obj;
 }
 ```
 
-## 3. Modern JavaScript/TypeScript Patterns
-
-### 3.1 Async/Await and Error Handling
+**Bad Examples**:
 ```typescript
-// Always use async/await instead of callbacks
+function isString(value: any) {
+  return typeof value === 'string';
+}
+```
+
+---
+
+## Asynchronous Programming
+
+### [TS-ASYNC-001] Use Async/Await Instead of Callbacks
+
+**Rule**: Always use async/await pattern instead of callback functions for asynchronous operations.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
 async function fetchUserData(id: string): Promise<User> {
   try {
     const response = await fetch(`/api/users/${id}`);
@@ -132,38 +257,184 @@ async function fetchUserData(id: string): Promise<User> {
 }
 ```
 
-### 3.2 Optional Chaining and Nullish Coalescing
+**Bad Examples**:
 ```typescript
-// Use optional chaining for safe property access
-const city = user?.address?.city ?? 'Unknown';
+function fetchUserData(id: string, callback: (error: Error | null, user?: User) => void) {
+  fetch(`/api/users/${id}`)
+    .then(response => response.json())
+    .then(user => callback(null, user))
+    .catch(error => callback(error));
+}
+```
 
-// Use nullish coalescing for default values
+---
+
+### [TS-ASYNC-002] Proper Error Handling in Async Functions
+
+**Rule**: Always use try-catch blocks in async functions and handle errors appropriately.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
+async function fetchUserData(id: string): Promise<User> {
+  try {
+    const response = await fetch(`/api/users/${id}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+}
+```
+
+**Bad Examples**:
+```typescript
+async function fetchUserData(id: string): Promise<User> {
+  const response = await fetch(`/api/users/${id}`);
+  return await response.json();
+}
+```
+
+---
+
+## Modern JavaScript Features
+
+### [TS-MODERN-001] Optional Chaining
+
+**Rule**: Use optional chaining for safe property access.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
+const city = user?.address?.city ?? 'Unknown';
+```
+
+**Bad Examples**:
+```typescript
+const city = user && user.address && user.address.city ? user.address.city : 'Unknown';
+```
+
+---
+
+### [TS-MODERN-002] Nullish Coalescing
+
+**Rule**: Use nullish coalescing operator for default values.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const maxRetries = config.retries ?? 3;
 ```
 
-### 3.3 Array and Object Methods
+**Bad Examples**:
 ```typescript
-// Use functional array methods
+const maxRetries = config.retries || 3;
+```
+
+---
+
+### [TS-MODERN-003] Functional Array Methods
+
+**Rule**: Use functional array methods (map, filter, reduce) instead of for loops.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const activeUsers = users
   .filter(user => user.isActive)
   .map(user => ({ ...user, displayName: `${user.firstName} ${user.lastName}` }))
   .sort((a, b) => a.displayName.localeCompare(b.displayName));
+```
 
-// Use object destructuring
+**Bad Examples**:
+```typescript
+const activeUsers = [];
+for (let i = 0; i < users.length; i++) {
+  if (users[i].isActive) {
+    activeUsers.push({
+      ...users[i],
+      displayName: `${users[i].firstName} ${users[i].lastName}`
+    });
+  }
+}
+```
+
+---
+
+### [TS-MODERN-004] Object Destructuring
+
+**Rule**: Use object destructuring for extracting properties.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const { name, email, ...otherProps } = user;
 ```
 
-### 3.4 Template Literals
+**Bad Examples**:
 ```typescript
-// Use template literals for string interpolation
+const name = user.name;
+const email = user.email;
+```
+
+---
+
+### [TS-MODERN-005] Template Literals
+
+**Rule**: Use template literals for string interpolation.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const message = `Welcome ${user.name}! You have ${unreadCount} unread messages.`;
 ```
 
-## 4. Code Structure and Organization
-
-### 4.1 Import/Export Patterns
+**Bad Examples**:
 ```typescript
-// Use named exports for utilities and services
+const message = 'Welcome ' + user.name + '! You have ' + unreadCount + ' unread messages.';
+```
+
+---
+
+## Import and Export
+
+### [TS-IMPORT-001] Import Organization
+
+**Rule**: Organize imports by type: Node.js modules, third-party modules, then relative imports.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
+import { readFile, writeFile } from 'fs/promises';
+import express from 'express';
+import { config } from '../config';
+```
+
+**Bad Examples**:
+```typescript
+import { config } from '../config';
+import { readFile, writeFile } from 'fs/promises';
+import express from 'express';
+```
+
+---
+
+### [TS-IMPORT-002] Named vs Default Exports
+
+**Rule**: Use named exports for utilities and services, default exports for main classes or components.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
+// Named exports for utilities
 export const userService = {
   fetchUser,
   createUser,
@@ -171,28 +442,30 @@ export const userService = {
   deleteUser
 };
 
-// Use default exports for main classes or components
+// Default export for main class
 export default class UserController {
   // Implementation
 }
-
-// Import organization
-import { readFile, writeFile } from 'fs/promises'; // Node.js modules
-import express from 'express'; // Third-party modules
-import { config } from '../config'; // Relative imports
 ```
 
-### 4.2 Function Organization
+**Bad Examples**:
 ```typescript
-// Prefer function declarations for main functions
-function calculateTax(amount: number, rate: number): number {
-  return amount * rate;
-}
+// Mixed usage without clear pattern
+export default const userService = { ... };
+```
 
-// Use arrow functions for callbacks and short functions
-const processItems = (items: Item[]) => items.map(item => processItem(item));
+---
 
-// Use pure functions when possible
+## Functions
+
+### [TS-FUNCTION-001] Pure Functions
+
+**Rule**: Use pure functions when possible (no side effects, same input produces same output).
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 function formatCurrency(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -201,9 +474,50 @@ function formatCurrency(amount: number, currency = 'USD'): string {
 }
 ```
 
-## 5. Error Handling and Validation
+**Bad Examples**:
+```typescript
+let lastFormattedValue: string;
+function formatCurrency(amount: number): string {
+  lastFormattedValue = amount.toFixed(2);
+  return lastFormattedValue;
+}
+```
 
-### 5.1 Custom Error Classes
+---
+
+### [TS-FUNCTION-002] Function Length
+
+**Rule**: Functions should be less than 50 lines. Break down complex functions into smaller ones.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
+function processUser(user: User): ProcessedUser {
+  const validated = validateUser(user);
+  const enriched = enrichUserData(validated);
+  return formatUserOutput(enriched);
+}
+```
+
+**Bad Examples**:
+```typescript
+function processUser(user: User): ProcessedUser {
+  // 100+ lines of code doing everything
+}
+```
+
+---
+
+## Error Handling
+
+### [TS-ERROR-001] Custom Error Classes
+
+**Rule**: Use custom error classes that extend Error for domain-specific errors.
+
+**Severity**: Warning
+
+**Good Examples**:
 ```typescript
 class ValidationError extends Error {
   constructor(
@@ -224,9 +538,22 @@ class NotFoundError extends Error {
 }
 ```
 
-### 5.2 Input Validation
+**Bad Examples**:
 ```typescript
-// Use libraries like Zod for runtime validation
+throw new Error('Validation failed');
+throw new Error('Not found');
+```
+
+---
+
+### [TS-ERROR-002] Input Validation
+
+**Rule**: Use validation libraries like Zod for runtime type validation.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
 import { z } from 'zod';
 
 const UserSchema = z.object({
@@ -240,20 +567,49 @@ function validateUser(data: unknown): User {
 }
 ```
 
-## 6. Performance and Optimization
-
-### 6.1 Lazy Loading and Dynamic Imports
+**Bad Examples**:
 ```typescript
-// Dynamic imports for code splitting
+function validateUser(data: any): User {
+  if (!data.name || !data.email) {
+    throw new Error('Invalid user');
+  }
+  return data;
+}
+```
+
+---
+
+## Performance
+
+### [TS-PERF-001] Dynamic Imports
+
+**Rule**: Use dynamic imports for code splitting and lazy loading.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 async function loadHeavyModule() {
   const { heavyFunction } = await import('./heavy-module');
   return heavyFunction();
 }
 ```
 
-### 6.2 Memoization
+**Bad Examples**:
 ```typescript
-// Simple memoization for expensive computations
+import { heavyFunction } from './heavy-module';
+```
+
+---
+
+### [TS-PERF-002] Memoization
+
+**Rule**: Use memoization for expensive computations that are called frequently.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
   const cache = new Map();
   return ((...args: Parameters<T>) => {
@@ -268,11 +624,27 @@ const memoize = <T extends (...args: any[]) => any>(fn: T): T => {
 };
 ```
 
-## 7. Testing Best Practices
-
-### 7.1 Test Structure
+**Bad Examples**:
 ```typescript
-// Use descriptive test names
+// No memoization for expensive recursive function
+function fibonacci(n: number): number {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+```
+
+---
+
+## Testing
+
+### [TS-TEST-001] Test Structure
+
+**Rule**: Use Arrange-Act-Assert pattern for test structure.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 describe('UserService', () => {
   describe('fetchUser', () => {
     it('should return user when valid id is provided', async () => {
@@ -290,9 +662,24 @@ describe('UserService', () => {
 });
 ```
 
-### 7.2 Mock Implementation
+**Bad Examples**:
 ```typescript
-// Create type-safe mocks
+it('test user fetch', async () => {
+  const result = await userService.fetchUser('123');
+  expect(result).toBeDefined();
+});
+```
+
+---
+
+### [TS-TEST-002] Type-Safe Mocks
+
+**Rule**: Create type-safe mocks using jest.Mocked or similar utilities.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
 const mockUserRepository: jest.Mocked<UserRepository> = {
   findById: jest.fn(),
   save: jest.fn(),
@@ -300,27 +687,54 @@ const mockUserRepository: jest.Mocked<UserRepository> = {
 };
 ```
 
-## 8. Security Guidelines
+**Bad Examples**:
+```typescript
+const mockUserRepository = {
+  findById: jest.fn(),
+  save: jest.fn(),
+  delete: jest.fn()
+};
+```
 
-### 8.1 Input Sanitization
+---
+
+## Security
+
+### [TS-SECURITY-001] Input Sanitization
+
+**Rule**: All user input must be sanitized before processing or rendering.
+
+**Severity**: Error
+
+**Good Examples**:
 ```typescript
 import DOMPurify from 'dompurify';
 import { escape } from 'html-escaper';
 
-// Sanitize HTML input
 function sanitizeHtml(input: string): string {
   return DOMPurify.sanitize(input);
 }
 
-// Escape HTML entities
 function escapeHtml(input: string): string {
   return escape(input);
 }
 ```
 
-### 8.2 Environment Variables
+**Bad Examples**:
 ```typescript
-// Use type-safe environment variable handling
+element.innerHTML = userInput;
+```
+
+---
+
+### [TS-SECURITY-002] Environment Variables
+
+**Rule**: Use type-safe environment variable handling with validation.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
 interface EnvironmentConfig {
   readonly NODE_ENV: 'development' | 'production' | 'test';
   readonly DATABASE_URL: string;
@@ -329,18 +743,56 @@ interface EnvironmentConfig {
 }
 
 function getConfig(): EnvironmentConfig {
-  return {
+  const config = {
     NODE_ENV: process.env.NODE_ENV as EnvironmentConfig['NODE_ENV'] || 'development',
     DATABASE_URL: process.env.DATABASE_URL || '',
     JWT_SECRET: process.env.JWT_SECRET || '',
     PORT: parseInt(process.env.PORT || '3000', 10)
   };
+
+  if (!config.DATABASE_URL || !config.JWT_SECRET) {
+    throw new Error('Missing required environment variables');
+  }
+
+  return config;
 }
 ```
 
-## 9. Logging and Monitoring
+**Bad Examples**:
+```typescript
+const dbUrl = process.env.DATABASE_URL;
+const secret = process.env.JWT_SECRET;
+```
 
-### 9.1 Structured Logging
+---
+
+### [TS-SECURITY-003] No Secrets in Code
+
+**Rule**: Never hardcode secrets, API keys, or passwords in code.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
+const apiKey = process.env.API_KEY;
+```
+
+**Bad Examples**:
+```typescript
+const apiKey = 'sk-1234567890abcdef';
+```
+
+---
+
+## Logging
+
+### [TS-LOGGING-001] Structured Logging
+
+**Rule**: Use structured logging with proper log levels and context.
+
+**Severity**: Warning
+
+**Good Examples**:
 ```typescript
 import winston from 'winston';
 
@@ -350,72 +802,132 @@ const logger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
+  )
 });
 
-// Usage
 logger.info('User login attempt', { userId: user.id, ip: req.ip });
 logger.error('Database connection failed', { error: error.message });
 ```
 
-## 10. ESLint and Prettier Configuration
+**Bad Examples**:
+```typescript
+console.log('User logged in');
+console.log(error);
+```
 
-### 10.1 ESLint Rules
-```json
-{
-  "extends": [
-    "@typescript-eslint/recommended",
-    "@typescript-eslint/recommended-requiring-type-checking"
-  ],
-  "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/prefer-nullish-coalescing": "error",
-    "@typescript-eslint/prefer-optional-chain": "error",
-    "@typescript-eslint/no-non-null-assertion": "error",
-    "prefer-const": "error",
-    "no-var": "error",
-    "max-lines": ["error", { "max": 500 }],
-    "max-complexity": ["error", 10]
-  }
+---
+
+## Code Style
+
+### [TS-STYLE-001] No Unused Variables
+
+**Rule**: Remove or prefix unused variables with underscore.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
+function processUser(user: User, _options: Options) {
+  return user.name;
 }
 ```
 
-### 10.2 TypeScript Configuration
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": true
-  }
+**Bad Examples**:
+```typescript
+function processUser(user: User, options: Options) {
+  return user.name;
 }
 ```
 
-## 11. Code Review Checklist
+---
+
+### [TS-STYLE-002] No Explicit Any
+
+**Rule**: Avoid using explicit 'any' type. Use 'unknown' or proper types instead.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
+function processData(data: unknown): User {
+  if (isUser(data)) {
+    return data;
+  }
+  throw new Error('Invalid data');
+}
+```
+
+**Bad Examples**:
+```typescript
+function processData(data: any): User {
+  return data;
+}
+```
+
+---
+
+### [TS-STYLE-003] Prefer Const
+
+**Rule**: Use const for variables that are not reassigned.
+
+**Severity**: Warning
+
+**Good Examples**:
+```typescript
+const userName = 'John';
+const maxRetries = 3;
+```
+
+**Bad Examples**:
+```typescript
+let userName = 'John';
+let maxRetries = 3;
+```
+
+---
+
+### [TS-STYLE-004] No Var Declaration
+
+**Rule**: Never use var, always use const or let.
+
+**Severity**: Error
+
+**Good Examples**:
+```typescript
+const x = 10;
+let y = 20;
+```
+
+**Bad Examples**:
+```typescript
+var x = 10;
+var y = 20;
+```
+
+---
+
+## Code Review Checklist
 
 Before submitting code, ensure:
-- [ ] All functions have proper type annotations
-- [ ] Error handling is implemented appropriately
-- [ ] Security vulnerabilities are addressed
-- [ ] Code is properly tested
-- [ ] Performance implications are considered
-- [ ] Documentation is updated
-- [ ] Linting and formatting rules pass
 
-## 12. Additional Resources
+- [ ] All functions have proper type annotations ([TS-TYPE-001])
+- [ ] Error handling is implemented appropriately ([TS-ASYNC-002], [TS-ERROR-001])
+- [ ] Security vulnerabilities are addressed ([TS-SECURITY-001], [TS-SECURITY-002], [TS-SECURITY-003])
+- [ ] Code is properly tested ([TS-TEST-001], [TS-TEST-002])
+- [ ] Performance implications are considered ([TS-PERF-001], [TS-PERF-002])
+- [ ] Naming conventions are followed ([TS-NAMING-001] through [TS-NAMING-005])
+- [ ] No explicit 'any' types used ([TS-STYLE-002])
+- [ ] Modern JavaScript patterns are used ([TS-MODERN-001] through [TS-MODERN-005])
+
+---
+
+## Additional Resources
 
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)
 - [ESLint TypeScript Rules](https://typescript-eslint.io/rules/)
 - [OWASP Security Guidelines](https://owasp.org/www-project-top-ten/)
 
-Remember: These rules serve as guidelines to improve code quality and maintainability. Use judgment when exceptions are necessary and document the reasoning behind any deviations.
+---
+
+**Note**: These rules serve as guidelines to improve code quality and maintainability. Use judgment when exceptions are necessary and document the reasoning behind any deviations.

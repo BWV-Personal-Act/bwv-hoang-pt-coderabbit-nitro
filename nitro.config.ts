@@ -4,5 +4,5 @@ import { defineNitroConfig } from "nitropack/config"
 export default defineNitroConfig({
   compatibilityDate: "latest",
   srcDir: "src",
-  imports: false
+  errorHandler: '~/error.ts'
 });

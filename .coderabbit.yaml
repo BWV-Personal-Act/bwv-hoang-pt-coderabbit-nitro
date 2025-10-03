@@ -1,4 +1,4 @@
-language: "en-US"
+language: "vi-VN"
 
 reviews:
   profile: "assertive"
@@ -6,12 +6,12 @@ reviews:
   changed_files_summary: false
   sequence_diagrams: false
   estimate_code_review_effort: false
-  path_filters: [
-    "src/**",
-    "!src/drizzle/*"
-  ]
+  path_filters:
+    - "src/**"
+    - "!src/drizzle/*"
   auto_review:
-    enabled: false
+    enabled: true
+    auto_incremental_review: true # Set false if don't want auto review when push any commit
     labels:
       - ai-review
   finishing_touches:
@@ -27,7 +27,7 @@ reviews:
       mode: "warning"
       requirements: "Title should start with a verb, be syntactically correct, and ideally be under 50 characters"
     description:
-      mode: "warning"
+      mode: "off"
     issue_assessment:
       mode: "warning"
     custom_checks: []
