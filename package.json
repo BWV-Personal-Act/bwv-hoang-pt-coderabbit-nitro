@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.44.6",
+    "winston": "^3.18.3",
     "yup": "^1.7.1"
   }
 }

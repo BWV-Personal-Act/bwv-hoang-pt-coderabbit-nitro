@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { type Drz } from '~/repository/_base';
 import { DB_HOST, DB_NAME, DB_PASSWORD, DB_USER } from '~/settings';
-import { logger } from '~/utils/logger';
+import logger from '~/utils/logger';
 
 let db: Drz | undefined = undefined;
 
@@ -20,6 +20,7 @@ export default eventHandler(async (event) => {
   if (!db) {
     try {
       db = drizzle(connectionString, { logger: true });
+      logger.info('Initialize database connection successfully');
     } catch (error) {
       logger.error('Failed to initialize database connection:', error);
       throw createError({
