@@ -12,20 +12,23 @@ export class CustomerRepository extends BaseRepository<'customers'> {
   }
 
   async create(data: CustomerCreateParams) {
-    const [existingCustomer] = await this.db
+    const [ExistingCustomer] = await this.db
       .select()
       .from(this.model)
       .where(eq(this.model.email, data.email));
 
-    if (existingCustomer) {
+    if (ExistingCustomer) {
       throw createError({
         status: StatusCodes.BAD_REQUEST,
         statusMessage: messages.alreadyExist('Customer'),
       });
     }
 
-    return this.db.insert(this.model).values(data).returning({
-      id: this.model.id,
-    });
+    return this.db
+      .insert(this.model)
+      .values(data as typeof this.model.$inferInsert)
+      .returning({
+        id: this.model.id,
+      });
   }
 }

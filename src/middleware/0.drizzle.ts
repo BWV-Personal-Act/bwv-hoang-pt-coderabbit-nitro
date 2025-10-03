@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { type Drz } from '~/repository/_base';
 import { DB_HOST, DB_NAME, DB_PASSWORD, DB_USER } from '~/settings';
+import { logger } from '~/utils/logger';
 
 let db: Drz | undefined = undefined;
 
@@ -20,7 +21,7 @@ export default eventHandler(async (event) => {
     try {
       db = drizzle(connectionString, { logger: true });
     } catch (error) {
-      console.error('Failed to initialize database connection:', error);
+      logger.error('Failed to initialize database connection:', error);
       throw createError({
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         statusMessage: 'Database connection failed',
