@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { messages } from '~/factory/constant';
@@ -30,5 +30,21 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       .returning({
         id: this.model.id,
       });
+  }
+
+  async searchId(id: number) {
+    const [customer] = await this.db
+      .select()
+      .from(this.model)
+      .where(and(eq(this.model.id, id), isNotNull(this.model.createdAt)));
+
+    if (!customer) {
+      throw createError({
+        status: StatusCodes.NOT_FOUND,
+        statusMessage: messages.notFound(`Customer.id = ${id}`),
+      });
+    }
+
+    return customer;
   }
 }
