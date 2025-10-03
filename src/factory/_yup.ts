@@ -1,5 +1,7 @@
 import * as yup from 'yup';
 
+import { messages } from './constant';
+
 yup.addMethod(yup.number, 'positiveInteger', function () {
   return this.test('positiveInteger', (value, { originalValue }) => {
     if (value === null || value === undefined) return true;
@@ -8,15 +10,13 @@ yup.addMethod(yup.number, 'positiveInteger', function () {
   });
 });
 
-yup.addMethod(yup.number, 'valueOf', function (input: object) {
+yup.addMethod(yup.number, 'valueOf', function (input: Record<string, any>) {
   return this.test('valueOf', (value) => {
-    let obj = input;
-    if ((<any>input).value !== undefined) {
-      obj = (<any>input).value;
-    }
+    const obj = 'value' in input ? input.value : input;
+    if (obj === null) return true;
+
     const keyArr = Object.keys(obj);
     if (keyArr.length === 0) return true;
-    if (obj === null) return true;
 
     const valueList = keyArr.filter((val) => /^-?\d+$/.test(val));
     if (value == null) {
@@ -34,6 +34,23 @@ yup.addMethod(yup.number, 'valueOf', function (input: object) {
   });
 });
 
+yup.addMethod(
+  yup.string,
+  'dateFormat',
+  function (format: string = 'YYYY-MM-DD', message?: string) {
+    return this.test(
+      'dateFormat',
+      message || messages.invalidDateFormat(format),
+      function (value) {
+        if (!value) return true; // Let required() handle empty values
+
+        const regex = /^\d{4}-\d{2}-\d{2}$/;
+        return regex.test(value);
+      },
+    );
+  },
+);
+
 export const nat = () =>
   yup
     .number()
@@ -41,6 +58,12 @@ export const nat = () =>
     .positiveInteger();
 
 declare module 'yup' {
+  interface StringSchema {
+    positiveInteger(): this;
+    valueOf(obj: object): this;
+    dateFormat(format?: string, message?: string): this;
+  }
+
   interface NumberSchema {
     positiveInteger(): this;
     valueOf(obj: object): this;

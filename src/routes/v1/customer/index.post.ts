@@ -1,14 +1,11 @@
-import {
-  type CustomerCreateParams,
-  customerCreateSchema,
-} from '~/factory/user';
+import { customerCreateSchema } from '~/factory/customer';
 import { CustomerRepository } from '~/repository/customer';
 import { readData } from '~/utils/validator';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<{ id: number }[]> => {
   const body = await readData(event, customerCreateSchema);
 
-  const userrepo = new CustomerRepository(event.context.db);
+  const customerRepo = new CustomerRepository(event.context.db);
 
-  return userrepo.Create(body as CustomerCreateParams);
+  return customerRepo.create(body);
 });

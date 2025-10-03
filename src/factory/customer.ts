@@ -1,12 +1,12 @@
-import { date, InferType, number, object, string } from 'yup';
+import { InferType, object, string } from 'yup';
 
-import { ICommonAttr, Position } from './common';
 import { nat } from './_yup';
+import { ICommonAttr, Position } from './common';
 
 export interface ICustomerMainAttr {
   name: string;
   email: string;
-  positionId?: Position;
+  positionId: Position;
   startedDate: string;
   password: string;
 }
@@ -17,7 +17,7 @@ export const customerCreateFields = {
   name: string().max(100).required(),
   email: string().email().max(255).required(),
   positionId: nat().required().valueOf(Position),
-  startedDate: string().required(),
+  startedDate: string().dateFormat('YYYY-MM-DD').required(),
   password: string().max(255).required(),
 };
 
