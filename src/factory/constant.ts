@@ -6,6 +6,6 @@ interface Messages {
 
 export const messages: Messages = {
   alreadyExist: (field: string) => `${field} already exists`,
-  notFound: (field: string) => `${field} not exist`,
+  notFound: (field: string) => `${field} does not exist`,
   invalidDateFormat: (format: string) => `Date must be in ${format} format`,
 };

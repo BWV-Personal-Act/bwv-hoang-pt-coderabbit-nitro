@@ -32,7 +32,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       });
   }
 
-  async searchId(id: number) {
+  async searchId(id: number): Promise<typeof this.model.$inferSelect> {
     const [customer] = await this.db
       .select()
       .from(this.model)
