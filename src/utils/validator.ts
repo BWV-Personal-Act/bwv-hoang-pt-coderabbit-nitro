@@ -39,8 +39,8 @@ export const getIdParam = <T extends string = 'id'>(
     numValue <= 0
   ) {
     throw createError({
-      status: StatusCodes.BAD_REQUEST,
-      statusMessage: 'Invalid ID parameter',
+      status: StatusCodes.NOT_FOUND,
+      statusMessage: 'Not found URL',
     });
   }
 
