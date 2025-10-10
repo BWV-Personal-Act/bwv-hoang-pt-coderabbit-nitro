@@ -3,6 +3,7 @@ import {
   asc,
   eq,
   gte,
+  inArray,
   isNotNull,
   isNull,
   like,
@@ -66,6 +67,8 @@ export class CustomerRepository extends BaseRepository<'customers'> {
   }
 
   async search(params: CustomerSearchParams): Promise<ICustomerSearchResponse> {
+    const { limit, offset } = params;
+
     // Build where conditions
     const whereConditions = [isNull(this.model.deletedAt)];
 
@@ -93,11 +96,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       .from(this.model)
       .where(and(...whereConditions));
 
-    const totalCount = totalCountResult[0]?.count || 0;
-
-    // Parse pagination parameters
-    const limit = params.limit ? parseInt(params.limit) : 10;
-    const offset = params.offset ? parseInt(params.offset) : 0;
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
 
     // Get customers with pagination and ordering
     const customerResults = await this.db
@@ -132,7 +131,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
             .from(orders)
             .where(
               and(
-                sql`${orders.customerId} = ANY(${customerIds})`,
+                inArray(orders.customerId, customerIds),
                 isNull(orders.deletedAt),
               ),
             )
@@ -146,7 +145,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
           acc[order.customerId] = [];
         }
         acc[order.customerId].push({
-          id: order.orderId.toString(),
+          id: order.orderId,
           itemName: order.itemName,
           createdDate: order.createdDate.toISOString().split('T')[0],
         });
@@ -155,28 +154,21 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       {} as Record<number, IOrderResult[]>,
     );
 
-    // Map position IDs to names
-    const positionNames: Record<number, string> = {
-      0: '管理者',
-      1: 'グループ管理者',
-      2: '一般ユーザ',
-    };
-
     // Build final result
     const customer: ICustomerSearchResult[] = customerResults.map(
       (customer) => ({
-        id: customer.id.toString(),
+        id: customer.id,
         email: customer.email,
         name: customer.name,
         startedDate: customer.startedDate,
-        positionId: positionNames[customer.positionId],
+        positionId: customer.positionId,
         orders: ordersByCustomer[customer.id] || [],
       }),
     );
 
     return {
       totalCount,
-      customer: customer.length > 0 ? customer : undefined,
+      customer,
     };
   }
 }
