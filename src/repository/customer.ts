@@ -16,6 +16,7 @@ import { messages } from '~/factory/constant';
 import {
   CustomerCreateParams,
   CustomerSearchParams,
+  CustomerUpdateParams,
   ICustomerSearchResponse,
   ICustomerSearchResult,
   IOrderResult,
@@ -65,6 +66,94 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     }
 
     return customer;
+  }
+
+  async update(id: number, data: CustomerUpdateParams) {
+    // Check if customer exists and not deleted
+    const [existingCustomer] = await this.db
+      .select()
+      .from(this.model)
+      .where(and(eq(this.model.id, id), isNull(this.model.deletedAt)));
+
+    if (!existingCustomer) {
+      throw createError({
+        status: StatusCodes.NOT_FOUND,
+        statusMessage: messages.notFound(`Customer.id = ${id}`),
+      });
+    }
+
+    // Check if email is already taken by another customer
+    if (data.email !== existingCustomer.email) {
+      const [emailExists] = await this.db
+        .select()
+        .from(this.model)
+        .where(
+          and(eq(this.model.email, data.email), isNull(this.model.deletedAt)),
+        );
+
+      if (emailExists) {
+        throw createError({
+          status: StatusCodes.BAD_REQUEST,
+          statusMessage: messages.alreadyExist('Customer email'),
+        });
+      }
+    }
+
+    // TODO: Add authentication check
+    // If login user's position_id != 0 AND login user's customer.id != id
+    // throw 404 error
+
+    // Prepare update data
+    const updateData: Partial<typeof this.model.$inferInsert> = {
+      name: data.name,
+      email: data.email,
+      positionId: data.positionId,
+      startedDate: data.startedDate,
+      updatedAt: new Date(),
+    };
+
+    // Only update password if it's provided
+    if (data.password !== undefined) {
+      updateData.password = data.password;
+    }
+
+    const [result] = await this.db
+      .update(this.model)
+      .set(updateData)
+      .where(eq(this.model.id, id))
+      .returning({
+        id: this.model.id,
+      });
+
+    return result;
+  }
+
+  async delete(id: number) {
+    // Check if customer exists and not deleted
+    const [existingCustomer] = await this.db
+      .select()
+      .from(this.model)
+      .where(and(eq(this.model.id, id), isNull(this.model.deletedAt)));
+
+    if (!existingCustomer) {
+      throw createError({
+        status: StatusCodes.NOT_FOUND,
+        statusMessage: messages.notFound(`Customer.id = ${id}`),
+      });
+    }
+
+    // TODO: Add authentication check
+    // If login user's position_id != 0, throw 403 error
+    // If trying to delete the login user, throw deleteError
+
+    // Soft delete by setting deletedAt timestamp
+    await this.db
+      .update(this.model)
+      .set({
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(this.model.id, id));
   }
 
   async search(params: CustomerSearchParams): Promise<ICustomerSearchResponse> {

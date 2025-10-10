@@ -13,17 +13,26 @@ export interface ICustomerMainAttr {
 
 export interface ICustomerAttr extends ICustomerMainAttr, ICommonAttr {}
 
-export const customerCreateFields = {
+const customerBaseFields = {
   name: string().max(100).required(),
   email: string().email().max(255).required(),
   positionId: nat().required().valueOf(Positions),
   startedDate: string().dateFormat('YYYY-MM-DD').required(),
-  password: string().max(255).required(),
 };
 
-export const customerCreateSchema = object(customerCreateFields);
+export const customerCreateSchema = object({
+  ...customerBaseFields,
+  password: string().max(255).required(),
+});
 
 export type CustomerCreateParams = InferType<typeof customerCreateSchema>;
+
+export const customerUpdateSchema = object({
+  ...customerBaseFields,
+  password: string().max(255).optional(),
+});
+
+export type CustomerUpdateParams = InferType<typeof customerUpdateSchema>;
 
 // Customer Search interfaces and schemas
 export interface ICustomerSearchQuery {
