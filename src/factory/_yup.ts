@@ -101,3 +101,5 @@ declare module 'yup' {
     valueOf(obj: Record<string, any>): this;
   }
 }
+
+export * from 'yup';
