@@ -64,3 +64,14 @@ export const customerSearchSchema = object({
 });
 
 export type CustomerSearchParams = InferType<typeof customerSearchSchema>;
+
+// Customer Update schema
+export const customerUpdateSchema = object({
+  name: string().max(100).required(),
+  email: string().email().max(255).required(),
+  positionId: nat().required().valueOf(Positions),
+  startedDate: string().dateFormat('YYYY-MM-DD').required(),
+  password: string().max(255).optional(),
+});
+
+export type CustomerUpdateParams = InferType<typeof customerUpdateSchema>;
