@@ -82,12 +82,29 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       });
     }
 
+    // Check if email is already taken by another customer
+    if (data.email !== existingCustomer.email) {
+      const [emailExists] = await this.db
+        .select()
+        .from(this.model)
+        .where(
+          and(eq(this.model.email, data.email), isNull(this.model.deletedAt)),
+        );
+
+      if (emailExists) {
+        throw createError({
+          status: StatusCodes.BAD_REQUEST,
+          statusMessage: messages.alreadyExist('Customer email'),
+        });
+      }
+    }
+
     // TODO: Add authentication check
     // If login user's position_id != 0 AND login user's customer.id != id
     // throw 404 error
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: Partial<typeof this.model.$inferInsert> = {
       name: data.name,
       email: data.email,
       positionId: data.positionId,
