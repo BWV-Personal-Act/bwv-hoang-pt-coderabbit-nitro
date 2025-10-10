@@ -21,6 +21,7 @@ import {
   IOrderResult,
 } from '~/factory/customer';
 import { orders } from '~/schema';
+import { noRecordCondition } from '~/utils/sql';
 
 import { BaseRepository, Drz } from './_base';
 
@@ -70,16 +71,19 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     const { limit, offset } = params;
 
     // Build where conditions
-    const whereConditions = [isNull(this.model.deletedAt)];
+    let whereConditions = [isNull(this.model.deletedAt)];
 
     if (params.name) {
       whereConditions.push(like(this.model.name, `%${params.name}%`));
     }
 
     if (params.positionId) {
-      whereConditions.push(
-        eq(this.model.positionId, parseInt(params.positionId)),
-      );
+      const positionId = Number(params.positionId);
+      if (isNaN(positionId)) {
+        whereConditions = [noRecordCondition];
+      } else {
+        whereConditions.push(eq(this.model.positionId, positionId));
+      }
     }
 
     if (params.startedDateFrom) {
