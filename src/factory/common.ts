@@ -26,7 +26,7 @@ const numOrUndefined = (defaultValue: number) => (value: number) => {
 // Transform offset from page number to actual offset
 // Formula: (offset - 1) * limit
 // Default: offset = 1 means start from record 0
-const transformOffset = (value: any, originalValue: any, context: any) => {
+const transformOffset = (value: any, _originalValue: any, context: any) => {
   const numValue = Number(value);
   const offset = isNaN(numValue) ? 1 : numValue;
   const limit = context.parent.limit || 10;

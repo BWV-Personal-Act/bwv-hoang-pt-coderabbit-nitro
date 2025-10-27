@@ -1,4 +1,4 @@
-import { ILoginResponse,loginSchema } from '~/factory/auth';
+import { ILoginResponse, loginSchema } from '~/factory/auth';
 import { AuthRepository } from '~/repository/auth';
 import { readData } from '~/utils/validator';
 

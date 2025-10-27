@@ -7,7 +7,7 @@ import {
   isNull,
   like,
   lte,
-  sql
+  sql,
 } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
@@ -64,13 +64,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     id: number,
     user?: AuthUser,
   ): Promise<typeof this.model.$inferSelect> {
-    // Check permission: if position_id != 0 AND customer.id != id, return 403
-    if (user && user.positionId !== 0 && user.id !== id) {
-      throw createError({
-        status: StatusCodes.FORBIDDEN,
-        statusMessage: 'Access denied',
-      });
-    }
+    this.assertCanAccessCustomer(user, id);
 
     const [customer] = await this.db
       .select()
@@ -101,13 +95,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       });
     }
 
-    // Check permission: if position_id != 0 AND customer.id != id, return 404
-    if (user && user.positionId !== 0 && user.id !== id) {
-      throw createError({
-        status: StatusCodes.NOT_FOUND,
-        statusMessage: messages.notFound(`Customer.id = ${id}`),
-      });
-    }
+    this.assertCanAccessCustomer(user, id);
 
     // Check if email is already taken by another customer
     if (data.email !== existingCustomer.email) {
@@ -298,5 +286,14 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       totalCount,
       customer,
     };
+  }
+
+  private assertCanAccessCustomer(user: AuthUser | undefined, id: number) {
+    if (user && user.positionId !== 0 && user.id !== id) {
+      throw createError({
+        status: StatusCodes.FORBIDDEN,
+        statusMessage: 'Access denied',
+      });
+    }
   }
 }

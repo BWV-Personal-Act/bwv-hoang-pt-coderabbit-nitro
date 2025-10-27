@@ -22,7 +22,7 @@ const customerBaseFields = {
 
 export const customerCreateSchema = object({
   ...customerBaseFields,
-  positionId: nat().optional().valueOf(Positions).default(1),
+  positionId: nat().required().valueOf(Positions).default(1),
   password: string().max(255).required(),
 });
 

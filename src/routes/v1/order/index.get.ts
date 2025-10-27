@@ -1,4 +1,4 @@
-import { IOrderSearchResponse,orderSearchSchema } from '~/factory/order';
+import { IOrderSearchResponse, orderSearchSchema } from '~/factory/order';
 import { OrderRepository } from '~/repository/order';
 import { readQuery } from '~/utils/validator';
 

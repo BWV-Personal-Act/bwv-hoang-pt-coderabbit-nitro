@@ -2,6 +2,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
 import { LoginParams } from '~/factory/auth';
+import { comparePassword } from '~/utils/bcrypt';
+import { createTokens } from '~/utils/jwt';
 
 import { BaseRepository, Drz } from './_base';
 
@@ -19,17 +21,23 @@ export class AuthRepository extends BaseRepository<'customers'> {
         and(eq(this.model.email, data.email), isNull(this.model.deletedAt)),
       );
 
-    // Check if customer exists, password matches, and not deleted
-    if (!customer || customer.password !== data.password) {
+    const isMatch = await comparePassword(
+      data.password,
+      customer?.password || '',
+    );
+
+    if (!isMatch) {
       throw createError({
         status: StatusCodes.BAD_REQUEST,
         statusMessage: 'Login information is incorrect',
       });
     }
 
-    // Generate tokens (simplified version - in production use JWT)
-    const accessToken = `access_${customer.id}_${Date.now()}`;
-    const refreshToken = `refresh_${customer.id}_${Date.now()}`;
+    const { accessToken, refreshToken } = createTokens({
+      id: customer.id,
+      email: customer.email,
+      positionId: customer.positionId,
+    });
 
     return {
       id: String(customer.id),

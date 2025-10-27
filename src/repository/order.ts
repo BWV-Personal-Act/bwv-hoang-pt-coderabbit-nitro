@@ -1,7 +1,7 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import { IOrderSearchResponse,OrderSearchParams } from '~/factory/order';
+import { IOrderSearchResponse, OrderSearchParams } from '~/factory/order';
 import { AuthUser } from '~/middleware/1.auth';
 import { customers } from '~/schema';
 
@@ -16,13 +16,20 @@ export class OrderRepository extends BaseRepository<'orders'> {
     params: OrderSearchParams,
     user?: AuthUser,
   ): Promise<IOrderSearchResponse> {
-    // Check if user has permission (position_id must be 0 - 管理者)
-    if (user && user.positionId !== 0) {
+    if (!user) {
+      throw createError({
+        status: StatusCodes.UNAUTHORIZED,
+        statusMessage: 'Authentication required',
+      });
+    }
+
+    if (user.positionId !== 0) {
       throw createError({
         status: StatusCodes.FORBIDDEN,
         statusMessage: 'Access denied',
       });
     }
+
     const { limit, offset } = params;
 
     // Check if limit exceeds 100
@@ -33,16 +40,10 @@ export class OrderRepository extends BaseRepository<'orders'> {
       });
     }
 
-    // Get total count
-    const totalCountResult = await this.db
-      .select({ count: sql<number>`count(*)` })
-      .from(this.model);
-
-    const totalCount = Number(totalCountResult[0]?.count ?? 0);
-
-    // Get orders with customer info, including deleted orders
+    // Get orders with customer info and total count in single query
     const orderResults = await this.db
       .select({
+        totalCount: sql<number>`COUNT(*) OVER()`,
         orderId: this.model.orderId,
         itemName: this.model.itemName,
         itemCode: this.model.itemCode,
@@ -58,6 +59,8 @@ export class OrderRepository extends BaseRepository<'orders'> {
       .orderBy(desc(this.model.createdAt), desc(this.model.orderId))
       .limit(limit)
       .offset(offset);
+
+    const totalCount = orderResults[0]?.totalCount ?? 0;
 
     // Build final result
     const order = orderResults.map((order) => ({

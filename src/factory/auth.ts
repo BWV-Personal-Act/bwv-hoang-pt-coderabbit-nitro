@@ -1,9 +1,7 @@
 import { InferType, object, string } from 'yup';
 
-export interface ILoginParams {
-  email: string;
-  password: string;
-}
+export const STRONG_PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,255}$/;
 
 export interface ILoginResponse {
   id: string;
@@ -21,7 +19,9 @@ export interface ILoginResponse {
 
 export const loginSchema = object({
   email: string().email().required(),
-  password: string().required(),
+  password: string()
+    .matches(STRONG_PASSWORD_REGEX, 'Password is not strong enough')
+    .required(),
 });
 
 export type LoginParams = InferType<typeof loginSchema>;
