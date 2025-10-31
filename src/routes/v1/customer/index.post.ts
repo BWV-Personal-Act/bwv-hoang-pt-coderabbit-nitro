@@ -7,5 +7,5 @@ export default defineEventHandler(async (event): Promise<{ id: number }[]> => {
 
   const customerRepo = new CustomerRepository(event.context.db);
 
-  return customerRepo.create(body);
+  return customerRepo.create(body, event.context.user);
 });

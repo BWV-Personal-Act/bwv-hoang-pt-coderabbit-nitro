@@ -5,5 +5,5 @@ export default defineEventHandler(async (event) => {
 
   const customerRepo = new CustomerRepository(event.context.db);
 
-  return customerRepo.searchId(id);
+  return customerRepo.searchId(id, event.context.user);
 });
