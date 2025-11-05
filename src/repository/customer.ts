@@ -4,7 +4,6 @@ import {
   eq,
   gte,
   inArray,
-  isNotNull,
   isNull,
   like,
   lte,
@@ -21,6 +20,7 @@ import {
   ICustomerSearchResult,
   IOrderResult,
 } from '~/factory/customer';
+import { AuthUser } from '~/middleware/1.auth';
 import { orders } from '~/schema';
 import { noRecordCondition } from '~/utils/sql';
 
@@ -31,7 +31,15 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     super(db, 'customers');
   }
 
-  async create(data: CustomerCreateParams) {
+  async create(data: CustomerCreateParams, user?: AuthUser) {
+    // Check if user has permission (position_id must be 0 - 管理者)
+    if (user && user.positionId !== 0) {
+      throw createError({
+        status: StatusCodes.FORBIDDEN,
+        statusMessage: 'Access denied',
+      });
+    }
+
     const [ExistingCustomer] = await this.db
       .select()
       .from(this.model)
@@ -52,11 +60,16 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       });
   }
 
-  async searchId(id: number): Promise<typeof this.model.$inferSelect> {
+  async searchId(
+    id: number,
+    user?: AuthUser,
+  ): Promise<typeof this.model.$inferSelect> {
+    this.assertCanAccessCustomer(user, id);
+
     const [customer] = await this.db
       .select()
       .from(this.model)
-      .where(and(eq(this.model.id, id), isNotNull(this.model.createdAt)));
+      .where(and(eq(this.model.id, id), isNull(this.model.deletedAt)));
 
     if (!customer) {
       throw createError({
@@ -68,7 +81,7 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     return customer;
   }
 
-  async update(id: number, data: CustomerUpdateParams) {
+  async update(id: number, data: CustomerUpdateParams, user?: AuthUser) {
     // Check if customer exists and not deleted
     const [existingCustomer] = await this.db
       .select()
@@ -81,6 +94,8 @@ export class CustomerRepository extends BaseRepository<'customers'> {
         statusMessage: messages.notFound(`Customer.id = ${id}`),
       });
     }
+
+    this.assertCanAccessCustomer(user, id);
 
     // Check if email is already taken by another customer
     if (data.email !== existingCustomer.email) {
@@ -98,10 +113,6 @@ export class CustomerRepository extends BaseRepository<'customers'> {
         });
       }
     }
-
-    // TODO: Add authentication check
-    // If login user's position_id != 0 AND login user's customer.id != id
-    // throw 404 error
 
     // Prepare update data
     const updateData: Partial<typeof this.model.$inferInsert> = {
@@ -128,7 +139,15 @@ export class CustomerRepository extends BaseRepository<'customers'> {
     return result;
   }
 
-  async delete(id: number) {
+  async delete(id: number, user?: AuthUser) {
+    // Check if user has permission (position_id must be 0 - 管理者)
+    if (user && user.positionId !== 0) {
+      throw createError({
+        status: StatusCodes.FORBIDDEN,
+        statusMessage: 'Access denied',
+      });
+    }
+
     // Check if customer exists and not deleted
     const [existingCustomer] = await this.db
       .select()
@@ -142,9 +161,13 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       });
     }
 
-    // TODO: Add authentication check
-    // If login user's position_id != 0, throw 403 error
-    // If trying to delete the login user, throw deleteError
+    // Check if trying to delete the login user
+    if (user && user.id === id) {
+      throw createError({
+        status: StatusCodes.BAD_REQUEST,
+        statusMessage: 'Cannot delete yourself',
+      });
+    }
 
     // Soft delete by setting deletedAt timestamp
     await this.db
@@ -263,5 +286,14 @@ export class CustomerRepository extends BaseRepository<'customers'> {
       totalCount,
       customer,
     };
+  }
+
+  private assertCanAccessCustomer(user: AuthUser | undefined, id: number) {
+    if (user && user.positionId !== 0 && user.id !== id) {
+      throw createError({
+        status: StatusCodes.FORBIDDEN,
+        statusMessage: 'Access denied',
+      });
+    }
   }
 }
