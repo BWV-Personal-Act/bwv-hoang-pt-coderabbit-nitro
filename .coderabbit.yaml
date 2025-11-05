@@ -160,4 +160,26 @@ code_generation:
     path_instructions: []
 
   unit_tests:
-    path_instructions: []
+    path_instructions:
+      - path: "**/*.ts"
+        instructions: |
+          Use vitest as the testing framework.
+          Include comprehensive test coverage, including edge cases and error conditions.
+          Use proper TypeScript typings in expectations and mocks.
+
+      - path: "src/routes/v1/**"
+        instructions: |
+          These are API route handlers.
+          Use Vitest with supertest or MSW to simulate HTTP requests.
+          Focus on request/response validation, status codes, and error handling.
+          Mock external services and database dependencies.
+          Verify authentication, authorization, and middleware behavior.
+
+      - path: "src/repository/**"
+        instructions: |
+          These are repository layer tests.
+          Use Vitest as the testing framework.
+          Test business logic, data transformation, and repository queries.
+          Mock database connections (Drizzle ORM).
+          Focus on input/output correctness, transaction behavior, and error propagation.
+          Include both normal and failure scenarios.
