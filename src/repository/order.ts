@@ -1,7 +1,11 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { StatusCodes } from 'http-status-codes';
 
-import { IOrderSearchResponse, OrderSearchParams } from '~/factory/order';
+import {
+  IOrderSearchResponse,
+  OrderCreateParams,
+  OrderSearchParams,
+} from '~/factory/order';
 import { AuthUser } from '~/middleware/1.auth';
 import { customers } from '~/schema';
 
@@ -83,5 +87,22 @@ export class OrderRepository extends BaseRepository<'orders'> {
       total_count: totalCount,
       order,
     };
+  }
+
+  async create(data: OrderCreateParams, user?: AuthUser) {
+    // Check if user has permission (position_id must be 0 - 管理者)
+    if (user && user.positionId !== 0) {
+      throw createError({
+        status: StatusCodes.FORBIDDEN,
+        statusMessage: 'Access denied',
+      });
+    }
+
+    return this.db
+      .insert(this.model)
+      .values(data as typeof this.model.$inferInsert)
+      .returning({
+        id: this.model.orderId,
+      });
   }
 }

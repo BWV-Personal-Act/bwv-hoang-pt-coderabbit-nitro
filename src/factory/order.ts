@@ -1,5 +1,6 @@
-import { InferType, object } from 'yup';
+import { InferType, object, string } from 'yup';
 
+import { nat } from './_yup';
 import { commonSearchSchema } from './common';
 
 export interface IOrderSearchQuery {
@@ -31,3 +32,12 @@ export const orderSearchSchema = object({
 });
 
 export type OrderSearchParams = InferType<typeof orderSearchSchema>;
+
+export const orderCreateSchema = object({
+  item_name: string().required().max(15),
+  item_code: string().max(7),
+  item_quantity: nat().required(),
+  customer_id: nat().max(19).required(),
+});
+
+export type OrderCreateParams = InferType<typeof orderCreateSchema>;
